@@ -1,14 +1,9 @@
-# FiosVita
+# SVG Beleza
 
-Loja estática de cuidados capilares, preparada para GitHub Pages/Render.
+Loja online de cuidados capilares em construção.
 
-## Próximos passos
-1. Trocar `SEU-DOMINIO.com` pelo domínio final.
-2. Substituir os produtos demonstrativos pelos produtos reais.
-3. Adicionar fotos reais e informações reais de preço/estoque.
-4. Integrar o gateway Pix/cartão em um backend/serverless.
-5. Configurar webhook de confirmação.
-6. Publicar políticas completas de privacidade, compra, troca e devolução antes de vender.
+## Status
+Catálogo e experiência de compra em evolução. O checkout real será ativado após integração segura do gateway.
 
 ## Segurança
-Nunca coloque secret keys do gateway em HTML/JavaScript público. A criação do Pix e a confirmação via webhook devem ocorrer no backend.
+Credenciais secretas e operações de pagamento devem permanecer no backend. Nunca coloque chaves privadas do gateway no HTML ou JavaScript público.
