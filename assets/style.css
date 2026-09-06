@@ -7,3 +7,30 @@
 .product-photo[src*="239213_1.jpg"]{content:url('https://production.na01.natura.com/dw/image/v2/BFKR_PRD/on/demandware.static/-/Sites-natura-br-storefront-catalog/default/dw3e3a30d7/produto-joia/background/desktop/239213.jpg')!important;opacity:1!important}
 .product-photo[src*="194397_1.jpg"]{content:url('https://production.na01.natura.com/dw/image/v2/BFKR_PRD/on/demandware.static/-/Sites-natura-br-storefront-catalog/default/dwee8f5397/NATBRA-194397_1.jpg')!important;opacity:1!important}
 .product-photo[src*="204419_1.jpg"]{content:url('https://images.rede.natura.net/image/sku/1200x1200/204419_1.jpg')!important;opacity:1!important}
+
+/* Seletor de curvatura — experiência editorial premium, sem aparência de botões do navegador. */
+#categorias{padding-top:76px;padding-bottom:68px;background:linear-gradient(180deg,#fbfaf8 0%,#f6f1eb 100%)}
+#categorias .section-head{margin-bottom:34px;max-width:760px}
+#categorias .section-head h2{font-size:clamp(38px,4.4vw,56px);letter-spacing:-.045em}
+#categorias .section-head p:not(.eyebrow){font-size:16px;color:#746b64;max-width:620px}
+.category-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin-top:8px}
+.category-tab{position:relative;min-height:365px;width:100%;padding:27px 26px 25px;border:1px solid #ded6ce;border-radius:24px;background:#fff;overflow:hidden;cursor:pointer;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;align-items:flex-start;box-shadow:0 12px 32px rgba(49,35,24,.06);transition:transform .25s ease,box-shadow .25s ease,border-color .25s ease,background .25s ease;color:#201d1b;font:inherit}
+.category-tab::before{content:"";position:absolute;inset:0 0 30% 0;background-position:center;background-repeat:no-repeat;background-size:76% auto;transform:translateY(-5px);transition:transform .35s ease,background-size .35s ease;z-index:0}
+.category-tab::after{content:"";position:absolute;inset:45% 0 0;background:linear-gradient(180deg,rgba(255,255,255,0) 0%,rgba(255,255,255,.92) 48%,#fff 100%);z-index:0;pointer-events:none}
+.category-tab:nth-child(1)::before{background-image:url('https://production.na01.natura.com/dw/image/v2/BFKR_PRD/on/demandware.static/-/Sites-natura-br-storefront-catalog/default/dw87ba8714/produto-joia/background/desktop/239211.jpg')}
+.category-tab:nth-child(2)::before{background-image:url('https://production.na01.natura.com/dw/image/v2/BFKR_PRD/on/demandware.static/-/Sites-natura-br-storefront-catalog/default/dwc6fef1b1/produto-joia/background/desktop/239209.jpg')}
+.category-tab:nth-child(3)::before{background-image:url('https://production.na01.natura.com/dw/image/v2/BFKR_PRD/on/demandware.static/-/Sites-natura-br-storefront-catalog/default/dwee8f5397/NATBRA-194397_1.jpg')}
+.category-tab>*{position:relative;z-index:2}
+.category-tab>span{position:absolute;top:18px;left:18px;display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.9);border:1px solid #e7dfd8;color:#6f5c4b;font-size:11px;font-weight:800;letter-spacing:.08em;box-shadow:0 6px 18px rgba(39,27,17,.08)}
+.category-tab strong{display:block;font-family:'Playfair Display',serif;font-size:30px;line-height:1.02;letter-spacing:-.035em;margin:0 0 8px}
+.category-tab small{display:block;max-width:285px;color:#746b64;font-size:12px;line-height:1.45;font-weight:600}
+.category-tab small::after{content:'  Explorar coleção →';display:block;color:#201d1b;font-size:11px;font-weight:800;letter-spacing:.01em;margin-top:16px}
+.category-tab:hover{transform:translateY(-7px);box-shadow:0 24px 55px rgba(49,35,24,.13);border-color:#cbbdaf}
+.category-tab:hover::before{transform:translateY(-10px) scale(1.03);background-size:80% auto}
+.category-tab.active{border-color:#201d1b;box-shadow:0 24px 60px rgba(32,29,27,.16);transform:translateY(-4px)}
+.category-tab.active::after{background:linear-gradient(180deg,rgba(255,255,255,0) 40%,rgba(255,255,255,.94) 64%,#fff 100%)}
+.category-tab.active>span{background:#201d1b;color:#fff;border-color:#201d1b}
+.category-tab:focus-visible{outline:3px solid #b89c82;outline-offset:3px}
+#produtos{padding-top:72px}
+@media(max-width:850px){.category-tabs{grid-template-columns:1fr;gap:14px}.category-tab{min-height:320px}.category-tab::before{background-size:58% auto;inset:0 0 27% 0}.category-tab:hover::before{background-size:62% auto}}
+@media(max-width:520px){#categorias{padding-top:58px;padding-bottom:48px}.category-tab{min-height:300px;padding:22px}.category-tab strong{font-size:27px}.category-tab>span{top:14px;left:14px}.category-tab small{font-size:11px}.category-tab small::after{margin-top:12px}}
