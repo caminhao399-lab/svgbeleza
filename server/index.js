@@ -42,6 +42,22 @@ function cleanUtm(utm) {
   for (const key of keys) { if (utm[key] !== undefined && utm[key] !== null) { const value = String(utm[key]).trim(); if (value) result[key] = value.slice(0, 500); } }
   return result;
 }
+function cleanAddress(address) {
+  if (!address || typeof address !== 'object') throw new Error('Informe o endereço completo.');
+  const keys = ['cep', 'street', 'number', 'complement', 'neighborhood', 'city', 'state', 'source', 'naturaStore', 'naturaStoreAddress', 'naturaDistanceKm', 'naturaRouteMinutes', 'deliveryEstimateMinutes'];
+  const result = {};
+  for (const key of keys) {
+    if (address[key] !== undefined && address[key] !== null) {
+      const value = String(address[key]).trim();
+      if (value) result[key] = value.slice(0, 300);
+    }
+  }
+  const cep = String(result.cep || '').replace(/\D/g, '');
+  if (!/^\d{8}$/.test(cep)) throw new Error('Informe um CEP válido.');
+  if (!result.street || !result.number || !result.neighborhood || !result.city || !result.state) throw new Error('Informe rua, número, bairro, cidade e estado.');
+  result.cep = cep;
+  return result;
+}
 async function bravopayRequest(endpoint, options = {}) {
   if (!BRAVOPAY_API_KEY) throw new Error('BRAVOPAY_API_KEY não configurada no servidor.');
   const response = await fetch(`${BRAVOPAY_BASE_URL}${endpoint}`, { ...options, headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${BRAVOPAY_API_KEY}`, ...(options.headers || {}) } });
@@ -53,8 +69,9 @@ async function createPix(body) {
   const items = cleanItems(body.items); const amountCents = totalFor(items); if (amountCents < 100) throw new Error('Valor mínimo do pedido é R$ 1,00.');
   const payerName = String(body.payerName || '').trim().replace(/\s+/g, ' '); const payerDocument = normalizeDocument(body.payerDocument); const payerEmail = String(body.payerEmail || '').trim().slice(0, 160); const payerPhone = normalizeDocument(body.payerPhone);
   if (payerName.length < 3 || payerName.length > 120) throw new Error('Informe seu nome completo.'); if (!validPayerDocument(payerDocument)) throw new Error('Informe um CPF válido ou CNPJ válido.');
+  const address = cleanAddress(body.address);
   const externalReference = `svg-${crypto.randomUUID()}`;
-  const payload = { amount_cents: amountCents, method: 'pix', customer: { name: payerName, cpf: payerDocument, ...(payerEmail ? { email: payerEmail } : {}), ...(payerPhone ? { phone: payerPhone } : {}) }, external_reference: externalReference, utm: cleanUtm(body.utm), ...(BRAVOPAY_PRODUCT_ID ? { product_id: BRAVOPAY_PRODUCT_ID } : {}) };
+  const payload = { amount_cents: amountCents, method: 'pix', customer: { name: payerName, cpf: payerDocument, ...(payerEmail ? { email: payerEmail } : {}), ...(payerPhone ? { phone: payerPhone } : {}) }, external_reference: externalReference, metadata: { delivery_address: address }, utm: cleanUtm(body.utm), ...(BRAVOPAY_PRODUCT_ID ? { product_id: BRAVOPAY_PRODUCT_ID } : {}) };
   const data = await bravopayRequest('/transactions', { method: 'POST', body: JSON.stringify(payload) }); const copyPaste = data?.pix?.copy_paste;
   if (!data?.id || !copyPaste) throw new Error('A BravoPay não retornou uma cobrança PIX válida.');
   const qrDataUrl = await QRCode.toDataURL(copyPaste, { width: 320, margin: 2, errorCorrectionLevel: 'M' });
