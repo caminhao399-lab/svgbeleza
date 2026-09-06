@@ -1,13 +1,12 @@
 const http = require('node:http');
 const crypto = require('node:crypto');
-const fs = require('node:fs');
-const path = require('node:path');
 const QRCode = require('qrcode');
 const prices = require('./catalog');
 
 const PORT = Number(process.env.PORT || 10000);
 const API_KEY = process.env.GGPPIX_API_KEY;
 const WEBHOOK_SECRET = process.env.GGPPIX_WEBHOOK_SECRET;
+const WEBHOOK_URL = process.env.WEBHOOK_URL;
 const ALLOWED_ORIGIN = process.env.ALLOWED_ORIGIN || '';
 const GGPPIX_URL = 'https://ggpixapi.com/api/v1';
 
@@ -62,20 +61,16 @@ function validCPF(cpf) {
 function validPayerDocument(value) {
   const doc = normalizeDocument(value);
   if (doc.length === 11) return validCPF(doc);
-  if (doc.length === 14) return true; // CNPJ será validado pela GGPIXAPI.
+  if (doc.length === 14) return true; // A GGPIXAPI valida o CNPJ recebido.
   return false;
 }
 
 function cleanItems(items) {
-  if (!Array.isArray(items) || items.length < 1 || items.length > 50) {
-    throw new Error('Carrinho inválido.');
-  }
+  if (!Array.isArray(items) || items.length < 1 || items.length > 50) throw new Error('Carrinho inválido.');
   return items.map(item => {
     const id = String(item.id || '');
     const qty = Number(item.qty);
-    if (!prices[id] || !Number.isInteger(qty) || qty < 1 || qty > 20) {
-      throw new Error('Produto ou quantidade inválida.');
-    }
+    if (!prices[id] || !Number.isInteger(qty) || qty < 1 || qty > 20) throw new Error('Produto ou quantidade inválida.');
     return { id, qty, unitPriceCents: prices[id] };
   });
 }
@@ -85,14 +80,12 @@ function totalFor(items) {
 }
 
 function validateWebhook(rawBody, signature) {
-  if (!WEBHOOK_SECRET) return true;
+  if (!WEBHOOK_SECRET) return false;
   const match = /^t=(\d+),v1=([a-f0-9]+)$/i.exec(signature || '');
   if (!match) return false;
   const timestamp = Number(match[1]);
   if (!Number.isFinite(timestamp) || Math.abs(Date.now() / 1000 - timestamp) > 300) return false;
-  const expected = crypto.createHmac('sha256', WEBHOOK_SECRET)
-    .update(`${timestamp}.${rawBody}`)
-    .digest('hex');
+  const expected = crypto.createHmac('sha256', WEBHOOK_SECRET).update(`${timestamp}.${rawBody}`).digest('hex');
   const received = match[2];
   if (expected.length !== received.length) return false;
   return crypto.timingSafeEqual(Buffer.from(expected), Buffer.from(received));
@@ -102,11 +95,7 @@ async function ggpixRequest(endpoint, options = {}) {
   if (!API_KEY) throw new Error('GGPPIX_API_KEY não configurada no servidor.');
   const response = await fetch(`${GGPPIX_URL}${endpoint}`, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      'X-API-Key': API_KEY,
-      ...(options.headers || {})
-    }
+    headers: { 'Content-Type': 'application/json', 'X-API-Key': API_KEY, ...(options.headers || {}) }
   });
   const text = await response.text();
   let data;
@@ -114,13 +103,13 @@ async function ggpixRequest(endpoint, options = {}) {
   if (!response.ok) {
     const err = new Error(data.error || data.message || `GGPIXAPI HTTP ${response.status}`);
     err.status = response.status;
-    err.data = data;
     throw err;
   }
   return data;
 }
 
-async function createPix(body, origin) {
+async function createPix(body) {
+  if (!WEBHOOK_URL) throw new Error('WEBHOOK_URL não configurada no servidor.');
   const items = cleanItems(body.items);
   const amountCents = totalFor(items);
   if (amountCents < 100) throw new Error('Valor mínimo do pedido é R$ 1,00.');
@@ -133,21 +122,19 @@ async function createPix(body, origin) {
   if (!validPayerDocument(payerDocument)) throw new Error('Informe um CPF válido ou CNPJ válido.');
 
   const externalId = `svg-${crypto.randomUUID()}`;
-  const webhookUrl = process.env.WEBHOOK_URL || `${new URL(reqBaseUrl(origin)).origin}/webhooks/pix`;
   const metadata = {
     orderId: externalId,
     source: 'svgbeleza',
     items: items.map(({ id, qty }) => ({ id, qty })),
     amountCents
   };
-
   const payload = {
     amountCents,
     description: `Pedido SVG Beleza ${externalId}`,
     payerName,
     payerDocument,
     externalId,
-    webhookUrl,
+    webhookUrl: WEBHOOK_URL,
     metadata
   };
   if (payerEmail) payload.payerEmail = payerEmail;
@@ -158,18 +145,7 @@ async function createPix(body, origin) {
   if (!pixCopyPaste) throw new Error('A GGPIXAPI não retornou o Pix Copia e Cola.');
   const qrDataUrl = await QRCode.toDataURL(pixCopyPaste, { width: 320, margin: 2, errorCorrectionLevel: 'M' });
 
-  return {
-    orderId: externalId,
-    transactionId: data.id,
-    status: data.status || 'PENDING',
-    amountCents,
-    pixCopyPaste,
-    qrDataUrl
-  };
-}
-
-function reqBaseUrl(origin) {
-  return origin || ALLOWED_ORIGIN || 'https://svgbeleza-api.onrender.com';
+  return { orderId: externalId, transactionId: data.id, status: data.status || 'PENDING', amountCents, pixCopyPaste, qrDataUrl };
 }
 
 const server = http.createServer(async (req, res) => {
@@ -190,39 +166,24 @@ const server = http.createServer(async (req, res) => {
     if (url.pathname === '/api/create-pix' && req.method === 'POST') {
       if (ALLOWED_ORIGIN && origin !== ALLOWED_ORIGIN) return json(res, 403, { error: 'Origem não autorizada.' }, headers);
       const body = await readJson(req);
-      const result = await createPix(body, origin);
+      const result = await createPix(body);
       return json(res, 201, result, headers);
     }
 
     const statusMatch = url.pathname.match(/^\/api\/payment-status\/([^/]+)$/);
     if (statusMatch && req.method === 'GET') {
       const data = await ggpixRequest(`/transactions/${encodeURIComponent(statusMatch[1])}`);
-      return json(res, 200, {
-        transactionId: data.id,
-        status: data.status,
-        amountCents: data.amount,
-        externalId: data.externalId,
-        paidAt: data.paidAt || null
-      }, headers);
+      return json(res, 200, { transactionId: data.id, status: data.status, amountCents: data.amount, externalId: data.externalId, paidAt: data.paidAt || null }, headers);
     }
 
     if (url.pathname === '/webhooks/pix' && req.method === 'POST') {
       const chunks = [];
       for await (const chunk of req) chunks.push(chunk);
       const rawBody = Buffer.concat(chunks).toString('utf8');
-      if (!validateWebhook(rawBody, req.headers['x-webhook-signature'])) {
-        return json(res, 401, { error: 'Assinatura do webhook inválida.' });
-      }
+      if (!validateWebhook(rawBody, req.headers['x-webhook-signature'])) return json(res, 401, { error: 'Assinatura do webhook inválida.' });
       let event = {};
       try { event = JSON.parse(rawBody); } catch {}
-      console.log('[GGPIX WEBHOOK]', JSON.stringify({
-        transactionId: event.transactionId,
-        externalId: event.externalId,
-        type: event.type,
-        status: event.status,
-        amount: event.amount,
-        paidAt: event.paidAt
-      }));
+      console.log('[GGPIX WEBHOOK]', JSON.stringify({ transactionId: event.transactionId, externalId: event.externalId, type: event.type, status: event.status, amount: event.amount, paidAt: event.paidAt }));
       return json(res, 200, { received: true });
     }
 
@@ -237,5 +198,6 @@ const server = http.createServer(async (req, res) => {
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`SVG Beleza checkout ativo na porta ${PORT}`);
   if (!API_KEY) console.warn('ATENÇÃO: GGPPIX_API_KEY não configurada.');
-  if (!WEBHOOK_SECRET) console.warn('ATENÇÃO: GGPPIX_WEBHOOK_SECRET não configurada. Configure um segredo HMAC no webhook.');
+  if (!WEBHOOK_SECRET) console.warn('ATENÇÃO: GGPPIX_WEBHOOK_SECRET não configurada.');
+  if (!WEBHOOK_URL) console.warn('ATENÇÃO: WEBHOOK_URL não configurada.');
 });
