@@ -1,0 +1,33 @@
+/* SVG Beleza — acabamento premium: fundo atmosférico, identidade e coleções */
+:root{--ink:#201d1b;--cream:#fbfaf7;--paper:#fffdf9;--sage:#697064;--gold:#b89468;--line:#e8e0d7}
+body{background:var(--cream);position:relative;overflow-x:hidden}
+body:before,body:after{content:"";position:fixed;z-index:-1;pointer-events:none;border-radius:50%;filter:blur(2px);opacity:.42}
+body:before{width:560px;height:560px;left:-250px;top:520px;background:radial-gradient(circle,rgba(190,165,133,.18) 0,rgba(190,165,133,.07) 42%,transparent 70%)}
+body:after{width:620px;height:620px;right:-300px;top:1050px;background:radial-gradient(circle,rgba(105,112,100,.14) 0,rgba(105,112,100,.05) 44%,transparent 72%)}
+.header{background:rgba(255,253,249,.92)}
+.brand img{display:block;width:150px;height:auto}
+.footer-brand img{width:145px}
+.category-section{position:relative;isolation:isolate;padding-top:76px;padding-bottom:92px;background:linear-gradient(180deg,#fbfaf7 0%,#f6f0e8 100%);overflow:hidden}
+.category-section:before{content:"";position:absolute;inset:0;z-index:-1;opacity:.38;background:radial-gradient(ellipse at 10% 30%,rgba(190,165,133,.16),transparent 35%),radial-gradient(ellipse at 90% 75%,rgba(105,112,100,.12),transparent 38%)}
+.category-tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:34px}
+.category-tab{position:relative;min-height:285px;border:1px solid rgba(64,54,46,.12);border-radius:24px;padding:28px;text-align:left;display:flex;flex-direction:column;justify-content:flex-end;overflow:hidden;cursor:pointer;background:linear-gradient(145deg,#eee3d7,#d9c9b8);box-shadow:0 18px 45px rgba(45,32,22,.08);transition:transform .3s ease,box-shadow .3s ease,border-color .3s ease}
+.category-tab:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(32,29,27,.02) 30%,rgba(32,29,27,.78) 100%)}
+.category-tab:after{content:"";position:absolute;width:170px;height:170px;right:-55px;top:-55px;border-radius:50%;border:1px solid rgba(255,255,255,.35);box-shadow:0 0 0 28px rgba(255,255,255,.07),0 0 0 56px rgba(255,255,255,.035)}
+.category-tab:nth-child(2){background:linear-gradient(145deg,#dfe4d9,#aeb9a8)}
+.category-tab:nth-child(3){background:linear-gradient(145deg,#d8c0ae,#9c725a)}
+.category-tab:hover{transform:translateY(-7px);box-shadow:0 26px 58px rgba(45,32,22,.15)}
+.category-tab.active{border-color:rgba(184,148,104,.7);box-shadow:0 24px 58px rgba(70,45,25,.18),inset 0 0 0 1px rgba(255,255,255,.3)}
+.category-tab span,.category-tab strong,.category-tab small{position:relative;z-index:2;color:#fff}
+.category-tab span{position:absolute;left:24px;top:21px;width:42px;height:42px;border:1px solid rgba(255,255,255,.45);border-radius:50%;display:grid;place-items:center;font-size:11px;font-weight:800;letter-spacing:.08em;background:rgba(255,255,255,.1);backdrop-filter:blur(8px)}
+.category-tab strong{font-family:'Playfair Display',serif;font-size:29px;line-height:1.05;letter-spacing:-.02em;max-width:300px}
+.category-tab small{font-size:12px;line-height:1.45;margin-top:8px;max-width:290px;color:rgba(255,255,255,.84)}
+.category-tab strong:after{content:"  →";font-family:Arial,sans-serif;font-size:17px;opacity:.8;white-space:nowrap}
+.category-tab.active strong:after{color:#e6c99f}
+.hero{position:relative;isolation:isolate}
+.hero:after{content:"";position:absolute;inset:auto -120px -210px auto;width:460px;height:460px;border-radius:50%;z-index:-1;background:radial-gradient(circle,rgba(184,148,104,.13),transparent 68%)}
+.benefits{box-shadow:0 14px 45px rgba(24,20,17,.08)}
+.product-grid{position:relative}
+.product{box-shadow:0 14px 35px rgba(59,42,28,.07)}
+.product:hover{box-shadow:0 22px 50px rgba(59,42,28,.13)}
+@media(max-width:850px){.category-tabs{grid-template-columns:1fr}.category-tab{min-height:220px}.brand img{width:130px}}
+@media(max-width:520px){.category-section{padding-top:58px;padding-bottom:68px}.category-tab{min-height:205px;padding:22px}.category-tab strong{font-size:25px}.brand img{width:120px}}
