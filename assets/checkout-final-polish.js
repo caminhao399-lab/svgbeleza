@@ -9,7 +9,16 @@
     if (!items.length) return;
     const order = {
       createdAt: new Date().toISOString(),
-      items: items.map(i => ({ id:i.id, name:i.name || 'Produto', image:i.image || '', price:Number(i.price || 0), quantity:Number(i.qty || i.quantity || 1) })),
+      items: items.map(i => ({
+        id:i.id,
+        name:i.name || 'Produto',
+        image:i.image || '',
+        price:Number(i.price || 0),
+        quantity:Number(i.qty || i.quantity || 1),
+        instructions:i.instructions || i.howToUse || i.modoUso || '',
+        description:i.description || '',
+        sourceUrl:i.sourceUrl || i.url || i.link || ''
+      })),
       total: items.reduce((s,i) => s + Number(i.price || 0) * Number(i.qty || i.quantity || 1), 0)
     };
     try { localStorage.setItem(LAST_ORDER_KEY, JSON.stringify(order)); } catch {}
@@ -34,7 +43,7 @@
     .pix-support-title{display:flex;align-items:center;gap:10px;font-weight:800;font-size:14px;color:#173a29}
     .pix-support-icon{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#e1f1e5;color:#1d7a43;font-size:18px}
     .pix-support p{margin:8px 0 13px;color:#68716c;font-size:11px;line-height:1.5}
-    .pix-support button,.pix-success-whatsapp{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;background:#1d7a43;color:#fff;padding:11px 16px;font-weight:800;font-size:11px;cursor:pointer;text-decoration:none}
+    .pix-support button{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:0;border-radius:999px;background:#1d7a43;color:#fff;padding:11px 16px;font-weight:800;font-size:11px;cursor:pointer;text-decoration:none}
     .pix-support small{display:block;margin-top:8px;color:#8a8d87;font-size:9px}
     .confirmation-whatsapp{display:inline-flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;padding:12px 18px;border-radius:999px;background:#1d7a43;color:#fff;text-decoration:none;font-weight:800}
     @media(max-width:760px){.pix-support{padding:15px}.confirmation-whatsapp{width:100%}}
